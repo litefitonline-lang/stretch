@@ -7,9 +7,9 @@
 <meta name="description" content="Офлайн-растяжка Lite Fit по вторникам в 20:00 в КДЦ «Заря». Группа до 12 человек. Запись онлайн.">
 <meta property="og:title" content="Растяжка с Дарьей · Lite Fit">
 <meta property="og:description" content="Вторник, 20:00 · КДЦ «Заря». Небольшая группа, спокойный темп и внимание к каждому.">
-<meta property="og:image" content="img/darya.jpg">
+<meta property="og:image" content="darya.jpg">
 <meta name="theme-color" content="#05090B">
-<link rel="icon" href="img/logo.png">
+<link rel="icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -110,12 +110,12 @@ footer b{color:var(--tx2)}
 <body>
 
 <header class="bar"><div class="wrap">
-  <div class="logo"><img src="img/logo.png" alt="Lite Fit">Lite Fit <span>· растяжка</span></div>
+  <div class="logo"><img src="logo.png" alt="Lite Fit">Lite Fit <span>· растяжка</span></div>
   <a class="cta-mini" href="#zapis">Записаться</a>
 </div></header>
 
 <div class="hero">
-  <div class="ph"><img src="img/darya.jpg" alt="Дарья – тренер Lite Fit"></div>
+  <div class="ph"><img src="darya.jpg" alt="Дарья – тренер Lite Fit"></div>
   <div class="wrap txt">
     <span class="kicker">Lite Fit · офлайн-группа</span>
     <h1>Растяжка<br>с Дарьей</h1>
@@ -153,7 +153,7 @@ footer b{color:var(--tx2)}
   <section>
     <div class="eyebrow">Кто ведёт</div>
     <div class="card">
-      <div class="who"><img src="img/darya.jpg" alt=""><div><b>Дарья</b><span>тренер Lite Fit</span></div></div>
+      <div class="who"><img src="darya.jpg" alt=""><div><b>Дарья</b><span>тренер Lite Fit</span></div></div>
       <p style="margin:0">Внимательна к деталям и слышит человека: заметит, где Вы зажимаетесь, и подскажет, как выполнить упражнение именно Вам. На растяжке у неё нет «правильной картинки», под которую нужно подстроиться, – есть Ваше тело и то, что ему сейчас подходит.</p>
     </div>
   </section>
@@ -215,8 +215,8 @@ footer b{color:var(--tx2)}
   <section>
     <div class="eyebrow">Наши вторники</div>
     <div class="gal">
-      <img src="img/group-1.jpg" alt="Группа растяжки Lite Fit" loading="lazy">
-      <img src="img/group-2.jpg" alt="Группа растяжки Lite Fit" loading="lazy">
+      <img src="group-1.jpg" alt="Группа растяжки Lite Fit" loading="lazy">
+      <img src="group-2.jpg" alt="Группа растяжки Lite Fit" loading="lazy">
     </div>
   </section>
 
@@ -284,12 +284,11 @@ footer b{color:var(--tx2)}
 
 <footer><div class="wrap"><b>Lite Fit</b> · Свобода · Забота · Результат<br><a href="soglasie.html" style="color:var(--tx3)">Согласие на обработку данных</a> · <a href="politika.html" style="color:var(--tx3)">Политика обработки данных</a></div></footer>
 
-<script src="config.js"></script>
 <script>
 'use strict';
 /* ======== НАСТРОЙКИ СТРАНИЦЫ ======== */
-// Ссылка веб-приложения Apps Script (…/exec) задаётся в файле config.js
-const API_URL = window.RS_API_URL || '';
+// Ссылка веб-приложения Apps Script (…/exec) – та же, что в таблице «Настройки»
+const API_URL = 'https://script.google.com/macros/s/AKfycbyBIm10j4s4CQUl_UcG9neW05wXFD61vv8_7AFR3UqAmHOfI8WHAiuMXDT2fn4tLOze/exec';
 // Ссылка на текст согласия на обработку персональных данных
 const CONSENT_URL = 'soglasie.html';
 // Куда писать, если запись не отправилась
