@@ -107,16 +107,70 @@ select{background-image:linear-gradient(45deg,transparent 50%,var(--tx2) 50%),li
 .links a span{color:var(--acc)}
 footer{padding:40px 0 calc(40px + env(safe-area-inset-bottom));text-align:center;color:var(--tx3);font-size:13px}
 footer b{color:var(--tx2)}
+
+.nav{display:none}
+.hero-in{position:relative}
+.galwrap{position:relative}
+.gal img{cursor:zoom-in;user-select:none;-webkit-user-drag:none}
+.garr{display:none;position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:52px;height:52px;border-radius:50%;border:1px solid var(--line2);background:rgba(12,22,24,.85);color:var(--acc);font:400 30px/1 Manrope,sans-serif;cursor:pointer;backdrop-filter:blur(6px)}
+.garr:hover{background:var(--acc);color:var(--onAcc);border-color:var(--acc)}
+.garr.prev{left:8px}.garr.next{right:8px}
+.lb{position:fixed;inset:0;z-index:50;background:rgba(3,6,7,.94);display:flex;align-items:center;justify-content:center}
+.lb[hidden]{display:none}
+.lb img{max-width:92vw;max-height:86vh;border-radius:14px;object-fit:contain}
+.lb .garr{display:block}
+.lbx{position:absolute;top:16px;right:16px;width:46px;height:46px;border-radius:50%;border:1px solid var(--line2);background:var(--card);color:var(--tx);font-size:18px;cursor:pointer}
+.lbn{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:var(--tx2);font-size:14px}
+@media (min-width:960px){
+  body{font-size:17px}
+  .wrap{max-width:1180px;padding:0 32px}
+  header.bar .wrap{height:68px}
+  .nav{display:flex;gap:26px;margin-left:auto;margin-right:24px}
+  .nav a{color:var(--tx2);font-weight:600;font-size:15px}
+  .nav a:hover{color:var(--acc)}
+  .hero-in{max-width:1180px;margin:0 auto;padding:48px 32px 24px;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+  .hero .ph{order:2;max-width:none;margin:0;aspect-ratio:4/4.4;border-radius:28px;border:1px solid var(--line)}
+  .hero .ph::after{background:linear-gradient(180deg,rgba(5,9,11,0) 60%,rgba(5,9,11,.45) 100%)}
+  .hero .txt{order:1;margin:0;padding:0;max-width:none}
+  h1{font-size:76px;margin-top:22px}
+  .lead{font-size:20px;max-width:520px}
+  .facts{max-width:560px;gap:12px}
+  .hero .btn.pri{max-width:360px}
+  h2{font-size:32px}
+  section{padding:64px 0 8px}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
+  .pair-form{grid-template-columns:1.2fr .8fr}
+  .pair-form > section:last-child{position:sticky;top:96px}
+  .health{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding:26px 28px}
+  .health ul{margin-bottom:0}
+  .bring{grid-template-columns:1fr}
+  .galwrap{margin:0 -8px}
+  .gal{margin:0;padding:0 8px 8px;gap:16px;scroll-snap-type:x proximity}
+  .gal img{flex:0 0 auto;width:auto;max-width:none;height:480px;aspect-ratio:3/4}
+  .gal.drag{scroll-snap-type:none;cursor:grabbing}
+  .gal.drag img{cursor:grabbing}
+  .garr{display:block}
+  .gal-hint{display:none}
+  .card{padding:22px 24px}
+  #formCard{padding:28px 32px}
+  footer{padding-top:64px}
+}
+@media (min-width:1400px){
+  .wrap,.hero-in{max-width:1320px}
+  h1{font-size:88px}
+  .gal img{height:540px}
+}
 </style>
 </head>
 <body>
 
 <header class="bar"><div class="wrap">
   <div class="logo"><img src="logo.png" alt="Lite Fit">Lite Fit <span>· растяжка</span></div>
+  <nav class="nav"><a href="#about">Как проходит</a><a href="#price">Стоимость</a><a href="#place">Где и когда</a><a href="#zdorovie">Противопоказания</a><a href="#foto">Фото</a></nav>
   <a class="cta-mini" href="#zapis">Записаться</a>
 </div></header>
 
-<div class="hero">
+<div class="hero"><div class="hero-in">
   <div class="ph"><img src="darya.jpg" alt="Дарья – тренер Lite Fit"></div>
   <div class="wrap txt">
     <span class="kicker">Lite Fit · офлайн-группа</span>
@@ -129,10 +183,11 @@ footer b{color:var(--tx2)}
     </div>
     <a class="btn pri" href="#zapis">Записаться на занятие</a>
   </div>
-</div>
+</div></div>
 
 <main class="wrap">
 
+  <div class="pair">
   <section>
     <div class="eyebrow">Узнаёте себя?</div>
     <h2>Тело вроде не болит, но и свободно уже не двигается</h2>
@@ -151,7 +206,9 @@ footer b{color:var(--tx2)}
     </div>
     <p class="muted" style="margin-top:14px">Подходит, даже если Вы никогда не занимались: каждый работает в своём темпе и на своём уровне.</p>
   </section>
+  </div>
 
+  <div class="pair">
   <section>
     <div class="eyebrow">Кто ведёт</div>
     <div class="card">
@@ -160,7 +217,7 @@ footer b{color:var(--tx2)}
     </div>
   </section>
 
-  <section>
+  <section id="price">
     <div class="eyebrow">Стоимость</div>
     <h2>Разово или абонементом</h2>
     <div class="card">
@@ -169,8 +226,10 @@ footer b{color:var(--tx2)}
     </div>
     <p class="muted" style="margin-top:12px">Оплата наличными или переводом на занятии.</p>
   </section>
+  </div>
 
-  <section>
+  <div class="pair">
+  <section id="place">
     <div class="eyebrow">Где и когда</div>
     <div class="place">
       <div class="card"><div class="ic">🕗</div><div><b>Каждый вторник в 20:00</b><div class="muted">Группа – до 12 человек. Если мест нет, бот поставит Вас в лист ожидания и напишет, как только место освободится.</div></div></div>
@@ -188,34 +247,38 @@ footer b{color:var(--tx2)}
     </div>
     <p class="muted" style="margin-top:12px">Коврики и весь инвентарь есть на месте – об этом можно не переживать ❤️</p>
   </section>
+  </div>
 
   <section id="zdorovie">
     <div class="eyebrow">Перед первым занятием</div>
     <h2>Противопоказания</h2>
     <p class="muted">Растяжка подходит почти всем, но есть состояния, при которых сначала нужен совет врача.</p>
     <div class="card health">
-      <b>Сначала – к врачу, если у Вас:</b>
+      <div class="hcol"><b>Сначала – к врачу, если у Вас:</b>
       <ul>
         <li>заболевания суставов, артроз, остеопороз</li>
         <li>тромбоз, варикоз, тромбофлебит, атеросклероз</li>
         <li>недавний вывих или перелом</li>
         <li>беременность</li>
-      </ul>
-      <b>Подождите с занятиями:</b>
+      </ul></div>
+      <div class="hcol"><b>Подождите с занятиями:</b>
       <ul>
         <li>при обострении воспаления суставов (артрит, бурсит, тендинит) – пока не пройдёт острая фаза</li>
-      </ul>
-      <b>Можно заниматься, предупредив Дарью:</b>
+      </ul></div>
+      <div class="hcol"><b>Можно заниматься, предупредив Дарью:</b>
       <ul>
         <li>остеохондроз – без скруток позвоночника; растяжка ног и плечевого пояса как раз помогает</li>
         <li>любые травмы и ограничения – Дарья подберёт щадящий вариант</li>
         <li>во время менструации – по самочувствию, в щадящем режиме</li>
-      </ul>
+      </ul></div>
     </div>
   </section>
 
-  <section>
+  <section id="foto">
     <div class="eyebrow">Наши вторники</div>
+    <div class="galwrap">
+    <button class="garr prev" type="button" aria-label="Назад">‹</button>
+    <button class="garr next" type="button" aria-label="Дальше">›</button>
     <div class="gal">
       <img src="group-3.jpg" alt="Занятие по растяжке Lite Fit" loading="lazy">
       <img src="group-4.jpg" alt="Занятие по растяжке Lite Fit" loading="lazy">
@@ -223,9 +286,11 @@ footer b{color:var(--tx2)}
       <img src="group-2.jpg" alt="Занятие по растяжке Lite Fit" loading="lazy">
       <img src="group-5.jpg" alt="Занятие по растяжке Lite Fit" loading="lazy">
     </div>
+    </div>
     <div class="gal-hint">листайте →</div>
   </section>
 
+  <div class="pair pair-form">
   <section id="zapis">
     <div class="eyebrow">Запись</div>
     <h2>Записаться на растяжку</h2>
@@ -289,7 +354,10 @@ footer b{color:var(--tx2)}
       <a href="https://vk.ru/litefit_stretching" target="_blank" rel="noopener">Сообщество в ВК <span>→</span></a>
     </div>
   </section>
+  </div>
 </main>
+
+<div class="lb" id="lb" hidden><button class="lbx" type="button" aria-label="Закрыть">✕</button><button class="garr prev" type="button" aria-label="Назад">‹</button><img alt=""><button class="garr next" type="button" aria-label="Дальше">›</button><div class="lbn"></div></div>
 
 <footer><div class="wrap"><b>Lite Fit</b> · Свобода · Забота · Результат<br><a href="soglasie.html" style="color:var(--tx3)">Согласие на обработку данных</a> · <a href="politika.html" style="color:var(--tx3)">Политика обработки данных</a></div></footer>
 
@@ -362,6 +430,40 @@ function done(j, noTg, via) {
   $('#formCard').innerHTML = html;
   $('#zapis').scrollIntoView({ behavior: 'smooth' });
 }
+
+/* ===== Галерея: стрелки, перетаскивание мышью, просмотр на весь экран ===== */
+(function () {
+  const gal = document.querySelector('.gal');
+  if (!gal) return;
+  const imgs = Array.from(gal.querySelectorAll('img'));
+  const step = () => Math.max(gal.clientWidth * 0.7, 280);
+  document.querySelector('.galwrap .prev').onclick = () => gal.scrollBy({ left: -step(), behavior: 'smooth' });
+  document.querySelector('.galwrap .next').onclick = () => gal.scrollBy({ left: step(), behavior: 'smooth' });
+  // перетаскивание мышью (на компьютере)
+  let down = false, sx = 0, sl = 0, moved = 0;
+  gal.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; down = true; moved = 0; sx = e.clientX; sl = gal.scrollLeft; });
+  window.addEventListener('pointermove', e => { if (!down) return; const dx = e.clientX - sx; moved = Math.max(moved, Math.abs(dx)); if (moved > 4) gal.classList.add('drag'); gal.scrollLeft = sl - dx; });
+  window.addEventListener('pointerup', () => { if (!down) return; down = false; setTimeout(() => gal.classList.remove('drag'), 0); });
+  gal.addEventListener('dragstart', e => e.preventDefault());
+  // просмотр
+  const lb = document.getElementById('lb'), big = lb.querySelector('img'), num = lb.querySelector('.lbn');
+  let cur = 0;
+  const show = i => { cur = (i + imgs.length) % imgs.length; big.src = imgs[cur].src; num.textContent = (cur + 1) + ' / ' + imgs.length; };
+  const open = i => { show(i); lb.hidden = false; document.body.style.overflow = 'hidden'; };
+  const close = () => { lb.hidden = true; document.body.style.overflow = ''; };
+  imgs.forEach((im, i) => im.addEventListener('click', () => { if (moved > 4) return; open(i); }));
+  lb.querySelector('.prev').onclick = e => { e.stopPropagation(); show(cur - 1); };
+  lb.querySelector('.next').onclick = e => { e.stopPropagation(); show(cur + 1); };
+  lb.querySelector('.lbx').onclick = close;
+  lb.addEventListener('click', e => { if (e.target === lb) close(); });
+  document.addEventListener('keydown', e => {
+    if (lb.hidden) return;
+    if (e.key === 'Escape') close(); else if (e.key === 'ArrowLeft') show(cur - 1); else if (e.key === 'ArrowRight') show(cur + 1);
+  });
+  let tx = 0;
+  lb.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1)); });
+})();
 </script>
 </body>
 </html>
