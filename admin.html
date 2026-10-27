@@ -284,7 +284,8 @@ function renderSession() {
   if (closed) html += `<div class="banner acc">✓ Занятие закрыто. Отметки можно поправить – итоги пересчитаются при повторном закрытии.</div>`;
 
   if (mode === 'book') {
-    html += `<div class="stats"><div class="stat hl"><div class="v">${going.length + offered.length}<small> / ${v.seats.limit}</small></div><div class="l">записано</div></div>` +
+    const over = going.length + offered.length - v.seats.limit;
+    html += `<div class="stats"><div class="stat hl"><div class="v">${going.length + offered.length}<small> / ${v.seats.limit}</small></div><div class="l">${over > 0 ? 'записано · сверх +' + over : 'записано'}</div></div>` +
       `<div class="stat"><div class="v">${Math.max(0, v.seats.free)}</div><div class="l">свободно${v.seats.reserved ? ` · бронь ${v.seats.reserved}` : ''}</div></div>` +
       `<div class="stat"><div class="v">${waiting.length}</div><div class="l">в ожидании</div></div></div>`;
   } else {
@@ -334,7 +335,8 @@ function rowBook(r, extra) {
   const n = r.answer === 'Не буду' || r.answer === 'Пропустил';
   const w = r.answer === 'Ожидание';
   return `<div class="row"><div class="who" onclick="openCard('${r.id}')"><div class="nm">${h(r.name)}</div>${metaChips(r, extra)}</div>` +
-    `<div class="seg"><button class="y ${y ? 'on' : ''}" onclick="ans('${r.id}','Буду')">${w ? 'Ждёт' : 'Будет'}</button><button class="n ${n ? 'on' : ''}" onclick="ans('${r.id}','Не буду')">Нет</button></div></div>`;
+    (w ? `<button class="pay paid" style="flex-shrink:0" onclick="addOver('${r.id}','${h(r.name)}')">＋ В группу</button><button class="pay" onclick="ans('${r.id}','Не буду')">Убрать</button></div>` :
+    `<div class="seg"><button class="y ${y ? 'on' : ''}" onclick="ans('${r.id}','Буду')">Будет</button><button class="n ${n ? 'on' : ''}" onclick="ans('${r.id}','Не буду')">Нет</button></div></div>`);
 }
 
 function rowMark(r) {
@@ -354,6 +356,11 @@ async function ans(id, value) {
     const r = d.session.rows.find(x => x.id === id);
     if (r && r.answer === 'Ожидание') toast('Мест нет – клиент в листе ожидания №' + r.queue);
   }
+}
+async function addOver(id, name) {
+  const v = S.view, cnt = v.rows.filter(r => r.answer === 'Буду' || r.answer === 'Без записи' || r.answer === 'Предложено').length;
+  if (!(await confirmAsk(`Добавить ${name} в группу сверх лимита? Будет ${cnt + 1} человек при лимите ${v.seats.limit}.`))) return;
+  act('answer', { key: S.key, id: id, value: 'Буду', force: true }, 'Добавлен(а) в группу');
 }
 function att(id, val) { act('attend', { key: S.key, id: id, value: val }); }
 async function undoPay(payId, name) {
