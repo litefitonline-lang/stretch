@@ -234,9 +234,12 @@ footer b{color:var(--tx2)}
     <div class="card" id="formCard">
       <form id="f" novalidate>
         <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <label class="f" for="name">Имя и фамилия <i>*</i></label>
-        <input type="text" id="name" name="name" autocomplete="name" placeholder="Например: Анна Смирнова" required>
-        <div class="hint">Фамилию – по желанию</div>
+        <label class="f" for="fname">Имя <i>*</i></label>
+        <input type="text" id="fname" name="fname" autocomplete="given-name" placeholder="Например: Анна" required>
+        <div class="hint">Так бот и Дарья будут к Вам обращаться</div>
+
+        <label class="f" for="lname">Фамилия</label>
+        <input type="text" id="lname" name="lname" autocomplete="family-name" placeholder="Например: Смирнова">
 
         <label class="f" for="phone">Телефон <i>*</i></label>
         <input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="+7 900 000-00-00" required>
@@ -315,14 +318,16 @@ function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<':
 $('#f').addEventListener('submit', async ev => {
   ev.preventDefault();
   $('#err').classList.remove('on');
-  const name = $('#name').value.trim();
+  const fname = $('#fname').value.trim().replace(/\s+/g, ' ');
+  const lname = $('#lname').value.trim().replace(/\s+/g, ' ');
   const phone = $('#phone').value.trim();
   const digits = phone.replace(/\D/g, '');
   const noTg = $('#noTg').checked;
   const via = $('#via').value;
   const link = $('#link').value.trim();
   const fromEl = document.querySelector('input[name=from]:checked');
-  if (name.length < 2) return showErr('Укажите, пожалуйста, имя');
+  if (fname.length < 2) return showErr('Укажите, пожалуйста, имя');
+  if (fname.indexOf(' ') > 0) return showErr('В поле «Имя» – только имя, фамилию – в поле ниже');
   if (digits.length < 10) return showErr('Проверьте номер телефона');
   if (noTg && (via === 'ВК' || via === 'MAX') && !link) return showErr('Добавьте ссылку на профиль, чтобы Дарья могла написать');
   if (!$('#health').checked) return showErr('Отметьте, что прочитали противопоказания');
@@ -331,7 +336,7 @@ $('#f').addEventListener('submit', async ev => {
   btn.disabled = true; btn.textContent = 'Отправляю…';
   try {
     const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({
-      action: 'anketa', name: name, phone: phone, noTelegram: noTg, via: via, link: link,
+      action: 'anketa', firstName: fname, lastName: lname, phone: phone, noTelegram: noTg, via: via, link: link,
       from: fromEl ? fromEl.value : '', src: SRC, consent: true, healthAck: true, website: document.querySelector('[name=website]').value,
     }) });
     const j = await r.json();

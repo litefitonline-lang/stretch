@@ -579,7 +579,8 @@ function toggleRem(on) { act('reminders', { id: S.card.id, value: on, withClient
 function clientFields(c, short_) {
   c = c || {};
   const via = c.via || 'Telegram';
-  return `<label class="f">Имя и фамилия</label><input id="fn" value="${h(c.name)}" autocomplete="off">` +
+  return `<div class="g2"><div><label class="f">Имя</label><input id="fn" value="${h(c.first)}" placeholder="Анна" autocomplete="off"></div>` +
+    `<div><label class="f">Фамилия</label><input id="fl2" value="${h(c.last)}" placeholder="Смирнова" autocomplete="off"></div></div>` +
     `<label class="f">Телефон</label><input id="fp" type="tel" inputmode="tel" placeholder="+7 900 000-00-00" value="${h(c.phone)}" autocomplete="off">` +
     `<label class="f">Как связаться</label><select id="fv">${['Telegram', 'WhatsApp', 'ВК', 'MAX', 'Звонок'].map(x => `<option ${x === via ? 'selected' : ''}>${x}</option>`).join('')}</select>` +
     `<div id="flw" style="display:${via === 'ВК' || via === 'MAX' ? 'block' : 'none'}"><label class="f">Ссылка на профиль</label><input id="fl" placeholder="vk.ru/…" value="${h(c.link)}" autocomplete="off"></div>` +
@@ -588,12 +589,12 @@ function clientFields(c, short_) {
 function bindVia(el) { const s = el.querySelector('#fv'); s.onchange = () => { el.querySelector('#flw').style.display = s.value === 'ВК' || s.value === 'MAX' ? 'block' : 'none'; }; }
 function readFields(el) {
   const g = id => { const x = el.querySelector(id); return x ? x.value.trim() : ''; };
-  return { name: g('#fn'), phone: g('#fp'), via: g('#fv'), link: g('#fl'), comment: g('#fc') };
+  return { first: g('#fn'), last: g('#fl2'), phone: g('#fp'), via: g('#fv'), link: g('#fl'), comment: g('#fc') };
 }
 function openForm(c) {
   const edit = !!(c && c.id);
   const el = pushSheet(head(edit ? 'Изменить данные' : 'Новый клиент', edit ? '' : 'Клиент сразу начнёт получать напоминания, если подключит бота') +
-    clientFields(edit ? { name: c.name, phone: c.phone, via: c.via, link: c.link, comment: c.comment } : null) +
+    clientFields(edit ? { first: c.first, last: c.last, phone: c.phone, via: c.via, link: c.link, comment: c.comment } : null) +
     (c && c.tg ? '<p class="muted">Бот подключён – связь через Telegram.</p>' : '') +
     `<div class="acts"><button class="btn pri" id="fgo">${edit ? 'Сохранить' : 'Добавить клиента'}</button></div>`);
   bindVia(el);
