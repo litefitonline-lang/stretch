@@ -112,6 +112,29 @@ label.f{display:block;font-size:12px;color:var(--tx2);margin:14px 2px 6px;font-w
 .big{font-size:22px;font-weight:800}
 .mt{margin-top:12px}
 .muted{color:var(--tx2);font-size:13px}
+.near{display:flex;gap:8px;max-width:640px;margin:8px auto 0}
+.near button{flex:1;padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-weight:800;font-size:13px;color:var(--tx2);text-align:center}
+.near button small{display:block;font-size:11px;font-weight:700;color:var(--tx3);margin-top:1px}
+.near button.on{border-color:var(--acc);color:var(--acc);background:rgba(62,214,206,.08)}
+.near button.on small{color:var(--acc)}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px;margin-top:8px}
+.dc{border:1px solid var(--line2);border-radius:11px;padding:7px 6px;text-align:center;font-size:12px;font-weight:700;color:var(--tx2);background:var(--card)}
+.dc b{display:block;font-size:14px;color:var(--tx)}
+.dc.done{border-color:rgba(62,214,206,.45);background:rgba(62,214,206,.1);color:var(--acc)}
+.dc.done b{color:var(--acc)}
+.dc.booked{border-color:var(--acc);color:var(--acc)}
+.dc.missed,.dc.skip{border-color:transparent;background:var(--warmBg);color:var(--warm)}
+.dc.missed b,.dc.skip b{color:var(--warm)}
+.dc.cancelled,.dc.pause{opacity:.5;border-style:dashed}
+.dc.extra{border-style:dashed}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11px;color:var(--tx3);margin-top:8px}
+.dsel{display:flex;gap:8px}
+.dsel button{flex:1}
+.fl{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.fl button{padding:8px 12px;border-radius:999px;border:1px solid var(--line2);font-size:13px;font-weight:800;color:var(--tx2)}
+.fl button.on{border-color:var(--acc);color:var(--acc);background:rgba(62,214,206,.08)}
+.prog{height:6px;border-radius:99px;background:var(--card2);overflow:hidden;margin-top:6px}
+.prog i{display:block;height:100%;background:var(--acc)}
 </style>
 </head>
 <body>
@@ -129,13 +152,18 @@ let API = qs.get('api') || '';
 try { if (API) localStorage.setItem('rs_api', API); else API = localStorage.getItem('rs_api') || ''; } catch (e) {}
 const INIT = (tg && tg.initData) || '';
 
-const S = { tab: 'session', key: '', sessions: [], cfg: {}, actor: '', view: null, mode: null, clients: null, debts: null, q: '', showRest: false, busy: 0, stack: [], card: null };
+const S = { tab: 'session', key: '', sessions: [], cfg: {}, actor: '', view: null, mode: null, clients: null, debts: null, abons: null, abF: 'active', q: '', showRest: false, busy: 0, stack: [], card: null, nearest: [], abon: null, abonEl: null };
 
 const $ = s => document.querySelector(s);
 const h = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = n => String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const plural = (n, f) => { n = Math.abs(n) % 100; const a = n % 10; if (n > 10 && n < 20) return f[2]; if (a > 1 && a < 5) return f[1]; if (a === 1) return f[0]; return f[2]; };
 const short = k => String(k || '').slice(0, 5);
+const WDS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+const wdOf = k => { const p = String(k).split('.'); return new Date(Date.UTC(+p[2], +p[1] - 1, +p[0])).getUTCDay(); };
+const dayName = w => { const d = (S.cfg.days || []).find(x => x.wd === w); return d ? d.short : WDS[w]; };
+const daysLabel = arr => (arr || []).map(dayName).join(' + ');
+const planWord = n => n + ' ' + plural(n, ['занятие', 'занятия', 'занятий']);
 
 function busy(on) { S.busy += on ? 1 : -1; $('#bar').classList.toggle('on', S.busy > 0); }
 function toast(t, err) { const el = document.createElement('div'); el.className = 'toast' + (err ? ' err' : ''); el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), err ? 4000 : 1900); }
@@ -160,13 +188,16 @@ async function call(action, data) {
 async function act(action, data, okMsg) {
   try {
     const d = await call(action, Object.assign({ refreshKey: S.key }, data || {}));
-    if (d.session && d.session.key === S.key) S.view = d.session;
+    if (d.session && d.session.key === S.key) { S.view = d.session; syncNear(); }
     if (d.client && S.card) S.card = d.client;
-    S.clients = null; S.debts = null;
+    if (d.abon && S.abon) S.abon = d.abon;
+    S.clients = null; S.debts = null; S.abons = null;
     haptic();
     if (okMsg) toast(okMsg);
     render();
     if (S.card && S.cardEl) renderCard();
+    if (S.abon && S.abonEl) renderAbon();
+    if (S.tab === 'abons') loadAbons();
     return d;
   } catch (e) { haptic('error'); toast(e.message, true); return null; }
 }
@@ -184,7 +215,7 @@ function pushSheet(html) {
 }
 function popSheet() {
   const ov = S.stack.pop();
-  if (ov) { if (ov.firstChild === S.cardEl) { S.cardEl = null; S.card = null; } ov.remove(); }
+  if (ov) { if (ov.firstChild === S.cardEl) { S.cardEl = null; S.card = null; } if (ov.firstChild === S.abonEl) { S.abonEl = null; S.abon = null; } ov.remove(); }
   if (!S.stack.length && tg && tg.BackButton) tg.BackButton.hide();
 }
 function closeAll() { while (S.stack.length) popSheet(); }
@@ -199,14 +230,20 @@ async function boot() {
   if (!INIT) return fatal('Откройте приложение из Telegram – кнопкой «Управление» в боте.');
   try {
     const d = await call('init');
-    S.actor = d.actor; S.cfg = d.cfg; S.sessions = d.sessions; S.key = d.upcoming;
+    S.actor = d.actor; S.cfg = d.cfg; S.sessions = d.sessions; S.key = d.upcoming; S.nearest = d.nearest || [];
     render();
     await loadSession();
   } catch (e) { fatal(e.message); }
 }
+function syncNear() {
+  const v = S.view; if (!v) return;
+  const n = S.nearest.find(x => x.key === v.key);
+  if (n && n.limit !== '') n.going = v.rows.filter(r => r.answer === 'Буду' || r.answer === 'Без записи' || r.answer === 'Предложено').length;
+}
+function goKey(k) { if (k === S.key) return; S.key = k; if (!S.sessions.some(x => x.key === k)) { S.sessions.push({ key: k, status: 'Запланировано' }); S.sessions.sort((a, b) => { const f = x => x.split('.').reverse().join(''); return f(a.key) < f(b.key) ? -1 : 1; }); } loadSession(); }
 async function loadSession() {
   S.view = null; S.mode = null; S.showRest = false; render();
-  try { const d = await call('session', { key: S.key }); S.view = d.session; render(); }
+  try { const d = await call('session', { key: S.key }); S.view = d.session; syncNear(); render(); }
   catch (e) { toast(e.message, true); }
 }
 function go(dir) {
@@ -218,7 +255,9 @@ function setTab(t) {
   S.tab = t; render(); window.scrollTo(0, 0);
   if (t === 'clients' && !S.clients) loadClients();
   if (t === 'debts' && !S.debts) loadDebts();
+  if (t === 'abons' && !S.abons) loadAbons();
 }
+async function loadAbons() { try { const d = await call('abons'); S.abons = d.abons; if (S.tab === 'abons') render(); } catch (e) { toast(e.message, true); } }
 async function loadClients() { try { const d = await call('clients'); S.clients = d.clients; render(); } catch (e) { toast(e.message, true); } }
 async function loadDebts() { try { const d = await call('debts'); S.debts = d.debts; render(); } catch (e) { toast(e.message, true); } }
 
@@ -228,6 +267,7 @@ function render() {
   renderTabs();
   if (S.tab === 'session') renderSession();
   else if (S.tab === 'clients') renderClients();
+  else if (S.tab === 'abons') renderAbons();
   else renderDebts();
 }
 
@@ -240,8 +280,9 @@ function renderTop() {
     const st = v ? v.status : '';
     const sub = v ? `${v.time} · ${st === 'Проведено' ? 'проведено' : st === 'Отменено' ? 'отменено' : v.ended ? 'прошло, не закрыто' : v.started ? 'идёт сейчас' : 'запланировано'}` : '';
     html += `<div class="datebar"><button class="arr" onclick="go(-1)" ${i <= 0 ? 'disabled' : ''}>‹</button><div class="dd"><div class="t">${h(title)}</div><div class="s">${h(sub)}</div></div><button class="arr" onclick="go(1)" ${i >= S.sessions.length - 1 ? 'disabled' : ''}>›</button></div>`;
+    if (S.nearest.length > 1) html += `<div class="near">${S.nearest.map(n => `<button class="${n.key === S.key ? 'on' : ''}" onclick="goKey('${n.key}')">${h(n.label)}<small>${n.limit !== '' ? `записано ${n.going} / ${n.limit}` : 'отметить и закрыть'}</small></button>`).join('')}</div>`;
   } else {
-    html += `<div class="datebar"><div class="dd"><div class="t">${S.tab === 'clients' ? 'Клиенты' : 'Долги'}</div></div></div>`;
+    html += `<div class="datebar"><div class="dd"><div class="t">${{ clients: 'Клиенты', abons: 'Абонементы', debts: 'Долги' }[S.tab]}</div></div></div>`;
   }
   $('#top').innerHTML = html;
 }
@@ -249,13 +290,14 @@ function renderTop() {
 function renderTabs() {
   const t = (id, ic, label, badge) => `<button class="${S.tab === id ? 'on' : ''}" onclick="setTab('${id}')"><span class="ic">${ic}</span>${label}${badge ? `<span class="badge">${badge}</span>` : ''}</button>`;
   const debtN = S.debts ? S.debts.length : 0;
-  $('#tabs').innerHTML = t('session', '🧘', 'Занятие') + t('clients', '👥', 'Клиенты') + t('debts', '💳', 'Долги', debtN || '');
+  $('#tabs').innerHTML = t('session', '🧘', 'Занятие') + t('clients', '👥', 'Клиенты') + t('abons', '🎫', 'Абонементы') + t('debts', '💳', 'Долги', debtN || '');
 }
 
 function abonChip(r) {
   const a = r.abon;
-  if (r.type === 'Абонемент' && a) return `<span class="chip acc">абонемент · ост. ${a.left} из ${a.total}</span>`;
-  if (a && a.left > 0 && a.status === 'Активен') return `<span class="chip acc">абонемент · ост. ${a.left} из ${a.total}</span>`;
+  const dd = a && a.days && (S.cfg.days || []).length > 1 ? ' · ' + daysLabel(a.days) : '';
+  if (r.type === 'Абонемент' && a) return `<span class="chip acc">абонемент ${a.total}${dd} · ост. ${a.left}</span>`;
+  if (a && a.left > 0 && a.status === 'Активен') return `<span class="chip acc">абонемент ${a.total}${dd} · ост. ${a.left}</span>`;
   return `<span class="chip">разово</span>`;
 }
 function tgChip(r) {
@@ -391,22 +433,42 @@ function openCancel() {
 
 /* ---------- оплата ---------- */
 function findRow(id) { return (S.view && S.view.rows.find(r => r.id === id)) || (S.card && S.card.id === id ? S.card : null); }
+/** Выбор дней: кнопки дней + «Оба дня». Возвращает html; клики – через data-d */
+function daysPicker(cur, allowBoth) {
+  const all = (S.cfg.days || []).map(d => d.wd);
+  if (all.length < 2) return '';
+  const same = (a, b) => a.slice().sort().join() === b.slice().sort().join();
+  return `<div class="dsel">` + all.map(w => `<button class="opt ${same(cur, [w]) ? 'on' : ''}" data-d="${w}" style="justify-content:center">${h(dayName(w))}</button>`).join('') +
+    (allowBoth ? `<button class="opt ${same(cur, all) ? 'on' : ''}" data-d="${all.join('.')}" style="justify-content:center">${all.length === 2 ? 'Оба дня' : 'Все'}</button>` : '') + `</div>`;
+}
+const parseD = s => String(s).split('.').map(Number);
+function defDays(n, clientDays) {
+  const all = (S.cfg.days || []).map(d => d.wd);
+  if (n >= S.cfg.maxN && (S.cfg.plans || []).length > 1) return all.slice();
+  return (clientDays && clientDays.length ? clientDays : all.slice(0, 1)).slice();
+}
 function openPay(id, key, onlyAbon) {
   const r = findRow(id) || { id: id, name: '' };
   const c = S.cfg;
-  const st = { kind: onlyAbon ? 'abon' : 'single', method: '' };
+  const plans = c.plans && c.plans.length ? c.plans : [{ n: c.an, price: c.pa }];
+  const cDays = r.days || (S.card && S.card.id === id ? S.card.days : null);
+  const st = { kind: onlyAbon ? 'abon' : 'single', n: plans[0].n, method: '', days: defDays(plans[0].n, cDays) };
+  const multi = (c.days || []).length > 1;
   const el = pushSheet(head('Оплата', h(r.name) + (key && !onlyAbon ? ' · занятие ' + short(key) : '')) + '<div id="pb"></div>');
+  const price = () => st.kind === 'abon' ? (plans.find(p => p.n === st.n) || plans[0]).price : c.p1;
   const draw = () => {
     el.querySelector('#pb').innerHTML =
       `<div class="opts">` +
       (onlyAbon ? '' : `<button class="opt ${st.kind === 'single' ? 'on' : ''}" data-k="single"><span>Разовое занятие<small>за ${short(key)}</small></span><span class="pr">${money(c.p1)} ₽</span></button>`) +
-      `<button class="opt ${st.kind === 'abon' ? 'on' : ''}" data-k="abon"><span>Абонемент на ${c.an} ${plural(c.an, ['занятие', 'занятия', 'занятий'])}<small>${money(c.pa / c.an)} ₽ за занятие · действует ${c.aw} ${plural(c.aw, ['неделю', 'недели', 'недель'])}${key && !onlyAbon ? ' · это занятие спишется с него' : ''}</small></span><span class="pr">${money(c.pa)} ₽</span></button></div>` +
+      plans.map(p => `<button class="opt ${st.kind === 'abon' && st.n === p.n ? 'on' : ''}" data-k="abon" data-n="${p.n}"><span>Абонемент на ${planWord(p.n)}<small>${money(p.price / p.n)} ₽ за занятие · ${c.aw} ${plural(c.aw, ['неделя', 'недели', 'недель'])}${p.n >= c.maxN && multi ? ' · 2 раза в неделю' : multi ? ' · 1 раз в неделю' : ''}${key && !onlyAbon ? ' · это занятие спишется с него' : ''}</small></span><span class="pr">${money(p.price)} ₽</span></button>`).join('') + `</div>` +
+      (st.kind === 'abon' && multi ? `<label class="f">Дни абонемента – на них держится место и строится план</label>${daysPicker(st.days, true)}` : '') +
       `<label class="f">Способ оплаты</label><div class="g2"><button class="opt ${st.method === 'Наличные' ? 'on' : ''}" data-m="Наличные">💵 Наличные</button><button class="opt ${st.method === 'Перевод' ? 'on' : ''}" data-m="Перевод">📲 Перевод</button></div>` +
-      `<div class="acts"><button class="btn pri" id="pgo" ${st.method ? '' : 'disabled'}>Отметить оплату · ${money(st.kind === 'abon' ? c.pa : c.p1)} ₽</button></div>`;
-    el.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { st.kind = b.dataset.k; draw(); });
+      `<div class="acts"><button class="btn pri" id="pgo" ${st.method ? '' : 'disabled'}>Отметить оплату · ${money(price())} ₽</button></div>`;
+    el.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { st.kind = b.dataset.k; if (b.dataset.n) { st.n = Number(b.dataset.n); st.days = defDays(st.n, cDays); } draw(); });
+    el.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { st.days = parseD(b.dataset.d); draw(); });
     el.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { st.method = b.dataset.m; draw(); });
     el.querySelector('#pgo').onclick = async () => {
-      const d = await act('pay', { key: key || '', id: id, kind: st.kind, method: st.method, withClient: !!S.card }, 'Оплата отмечена');
+      const d = await act('pay', { key: key || '', id: id, kind: st.kind, n: st.n, days: st.days, method: st.method, withClient: !!S.card }, 'Оплата отмечена');
       if (d) popSheet();
     };
   };
@@ -460,8 +522,9 @@ function renderClients() {
     `<div class="grp"><h3>Все клиенты<span>${list.length}</span></h3>` +
     (list.length ? `<div class="list">${list.map(c => {
       const a = c.abon;
-      const ab = a ? (a.status === 'Активен' ? `<span class="chip acc">абонемент · ост. ${a.left} из ${a.total} · до ${short(a.until)}</span>` : a.status === 'Истёк' ? `<span class="chip warm">абонемент истёк</span>` : '<span class="chip">абонемент закончился</span>') : '';
-      return `<div class="row" onclick="openCard('${c.id}')"><div class="who"><div class="nm">${h(c.name)}</div><div class="meta"><span class="chip">${h(c.phone)}</span>${ab}${tgChip(c)}${c.pausedTo ? `<span class="chip">пауза до ${short(c.pausedTo)}</span>` : ''}${c.reminders ? '' : '<span class="chip">напоминания выкл.</span>'}${c.debts ? `<span class="chip warm">долг ×${c.debts}</span>` : ''}</div></div><span style="color:var(--tx3)">›</span></div>`;
+      const ab = a ? (a.status === 'Активен' ? `<span class="chip acc">абонемент ${a.total} · ост. ${a.left} · до ${short(a.until)}</span>` : a.status === 'Истёк' ? `<span class="chip warm">абонемент истёк</span>` : '<span class="chip">абонемент закончился</span>') : '';
+      const dch = (S.cfg.days || []).length > 1 ? `<span class="chip">${c.ownDays ? h(daysLabel(c.days)) : 'дни не выбраны'}</span>` : '';
+      return `<div class="row" onclick="openCard('${c.id}')"><div class="who"><div class="nm">${h(c.name)}</div><div class="meta"><span class="chip">${h(c.phone)}</span>${dch}${ab}${tgChip(c)}${c.pausedTo ? `<span class="chip">пауза до ${short(c.pausedTo)}</span>` : ''}${c.reminders ? '' : '<span class="chip">напоминания выкл.</span>'}${c.debts ? `<span class="chip warm">долг ×${c.debts}</span>` : ''}</div></div><span style="color:var(--tx3)">›</span></div>`;
     }).join('')}</div>` : '<div class="empty">Никого не нашлось</div>') + '</div>';
   const inp = $('#cq');
   inp.oninput = () => { S.q = inp.value; const pos = inp.selectionStart; renderClients(); const n = $('#cq'); n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} };
@@ -496,9 +559,15 @@ function renderCard() {
       `<div class="g2 mt"><button class="btn sm" onclick="shareBot()">Отправить в Telegram</button><button class="btn sm" onclick="copyBot()">Скопировать ссылку</button></div></div>`;
   }
 
+  // дни занятий
+  if ((cfg.days || []).length > 1) {
+    html += `<div class="box"><div class="bt">Дни занятий</div><div class="muted" style="margin-bottom:8px">${c.ownDays ? 'Напоминания приходят только про эти дни' : 'Клиент ещё не выбирал – сейчас по умолчанию ' + h(daysLabel(c.days))}</div>${daysPicker(c.ownDays ? c.days : [], true)}</div>`;
+  }
   // абонемент
   html += `<div class="box"><div class="bt">Абонемент</div>`;
-  if (a && a.status === 'Активен') html += `<div class="big" style="color:var(--acc)">${a.left} из ${a.total}</div><div class="muted">осталось · действует до ${h(a.until)}${a.freeze ? ` · заморозка ${a.freeze} нед.` : ''}</div>`;
+  if (a && a.status === 'Активен') html += `<div class="big" style="color:var(--acc)">${a.left} из ${a.total}</div><div class="muted">осталось · ${h(daysLabel(a.days))} · до ${h(a.until)}${a.freeze ? ` · заморозка ${a.freeze} нед.` : ''}</div>` +
+    (a.spare !== undefined ? `<div class="meta" style="margin-top:6px">${spareChip(a)}${a.next ? `<span class="chip">следующее ${short(a.next)}</span>` : ''}</div>` : '') +
+    `<button class="btn sm mt" style="width:100%" onclick="openAbon('${a.id}')">📅 План абонемента и правки</button>`;
   else if (a && a.status === 'Истёк') html += `<div class="big" style="color:var(--warm)">Истёк ${h(a.until)}</div><div class="muted">не использовано: ${a.left}. Срок можно продлить заморозкой.</div>`;
   else html += `<div class="muted">${a ? 'Абонемент закончился' : 'Абонемента нет'} – занятия разово по ${money(cfg.p1)} ₽</div>`;
   html += `<div class="g2 mt"><button class="btn sm" onclick="openPay('${c.id}','',true)">Продать абонемент</button>` +
@@ -533,6 +602,13 @@ function renderCard() {
   }
   html += `<div class="acts"><button class="btn warn" onclick="delClient()">Удалить клиента полностью</button></div>`;
   el.innerHTML = html;
+  el.querySelectorAll('.dsel [data-d]').forEach(b => b.onclick = () => act('setDays', { id: c.id, days: parseD(b.dataset.d), withClient: true }, 'Дни сохранены'));
+}
+function spareChip(a) {
+  if (a.left <= 0) return '';
+  if (a.spare < 0) return `<span class="chip warm">⚠️ не успевает: дат ${a.ahead}, занятий ${a.left}</span>`;
+  if (a.spare === 0) return `<span class="chip warm">запаса нет</span>`;
+  return `<span class="chip acc">можно пропустить ${a.spare}</span>`;
 }
 async function delClient() {
   const c = S.card;
@@ -562,22 +638,99 @@ async function copyBot() {
 }
 function openTransfer() {
   const cfg = S.cfg;
+  const plans = cfg.plans && cfg.plans.length ? cfg.plans : [{ n: cfg.an, price: cfg.pa }];
   const d = new Date(Date.now() + (cfg.aw * 7 - 1) * 864e5);
   const iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  const st = { left: cfg.an };
+  const cd = S.card.days;
+  const st = { n: plans[0].n, left: plans[0].n, until: iso, days: defDays(plans[0].n, cd) };
+  const multi = (cfg.days || []).length > 1;
   const el = pushSheet(head('Перенести абонемент', 'Для абонемента, оплаченного до запуска системы. Запись об оплате не создаётся') + '<div id="tb"></div>');
   const draw = () => {
-    el.querySelector('#tb').innerHTML = `<label class="f">Сколько занятий осталось</label><div class="g2" style="grid-template-columns:repeat(${cfg.an},1fr)">` +
-      Array.from({ length: cfg.an }, (_, i) => i + 1).map(n => `<button class="opt ${st.left === n ? 'on' : ''}" data-n="${n}" style="justify-content:center">${n}</button>`).join('') + `</div>` +
-      `<label class="f">Действует до</label><input type="date" id="tu" value="${st.until || iso}">` +
+    el.querySelector('#tb').innerHTML = (plans.length > 1 ? `<label class="f">Какой абонемент</label><div class="g2">` + plans.map(p => `<button class="opt ${st.n === p.n ? 'on' : ''}" data-p="${p.n}" style="justify-content:center">На ${planWord(p.n)}</button>`).join('') + `</div>` : '') +
+      `<label class="f">Сколько занятий осталось</label><div class="g2" style="grid-template-columns:repeat(${Math.min(st.n, 8)},1fr)">` +
+      Array.from({ length: st.n }, (_, i) => i + 1).map(n => `<button class="opt ${st.left === n ? 'on' : ''}" data-n="${n}" style="justify-content:center;padding:13px 0">${n}</button>`).join('') + `</div>` +
+      (multi ? `<label class="f">Дни абонемента</label>${daysPicker(st.days, true)}` : '') +
+      `<label class="f">Действует до</label><input type="date" id="tu" value="${st.until}">` +
       `<div class="acts"><button class="btn pri" id="tgo">Перенести</button></div>`;
-    el.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { st.until = el.querySelector('#tu').value; st.left = Number(b.dataset.n); draw(); });
+    const keep = () => { st.until = el.querySelector('#tu').value; };
+    el.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { keep(); st.n = Number(b.dataset.p); st.left = Math.min(st.left, st.n); st.days = defDays(st.n, cd); draw(); });
+    el.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { keep(); st.left = Number(b.dataset.n); draw(); });
+    el.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { keep(); st.days = parseD(b.dataset.d); draw(); });
     el.querySelector('#tgo').onclick = async () => {
-      const d2 = await act('transferAbon', { id: S.card.id, left: st.left, until: el.querySelector('#tu').value, withClient: true }, 'Абонемент перенесён');
+      const d2 = await act('transferAbon', { id: S.card.id, n: st.n, left: st.left, days: st.days, until: el.querySelector('#tu').value, withClient: true }, 'Абонемент перенесён');
       if (d2) popSheet();
     };
   };
   draw();
+}
+
+/* ---------- абонементы ---------- */
+function renderAbons() {
+  const m = $('#main');
+  if (!S.abons) { m.innerHTML = '<div class="empty">Загрузка…</div>'; return; }
+  const actv = S.abons.filter(a => a.status === 'Активен');
+  const warn = actv.filter(a => a.spare < 0);
+  const list = S.abF === 'active' ? actv : S.abF === 'warn' ? warn : S.abons;
+  const f = (id, label) => `<button class="${S.abF === id ? 'on' : ''}" onclick="S.abF='${id}';render()">${label}</button>`;
+  let html = `<div class="stats"><div class="stat hl"><div class="v">${actv.length}</div><div class="l">активных</div></div>` +
+    (S.cfg.plans || []).slice(0, 2).map(p => `<div class="stat"><div class="v">${actv.filter(a => a.total === p.n).length}</div><div class="l">на ${planWord(p.n)}</div></div>`).join('') + `</div>`;
+  html += `<div class="fl mt">${f('active', 'Активные')}${warn.length ? f('warn', '⚠️ Не успевают · ' + warn.length) : ''}${f('all', 'Все')}</div>`;
+  if (!list.length) html += '<div class="empty">Абонементов пока нет. Продать – в карточке клиента или кнопкой «💳 Оплата» на занятии.</div>';
+  else html += `<div class="list">${list.map(a => {
+    const pct = a.total ? Math.round(a.used / a.total * 100) : 0;
+    const stc = a.status === 'Активен' ? '' : `<span class="chip ${a.status === 'Истёк' ? 'warm' : ''}">${a.status === 'Истёк' ? 'истёк' : 'закончился'}</span>`;
+    return `<div class="row" onclick="openAbon('${a.id}')"><div class="who"><div class="nm">${h(a.name)}</div>` +
+      `<div class="meta"><span class="chip acc">${a.total} · ${h(daysLabel(a.days))}</span><span class="chip">ост. ${a.left} · до ${short(a.until)}</span>${a.status === 'Активен' ? spareChip(a) : ''}${stc}</div>` +
+      `<div class="prog"><i style="width:${pct}%"></i></div></div><span style="color:var(--tx3)">›</span></div>`;
+  }).join('')}</div>`;
+  m.innerHTML = html;
+}
+async function openAbon(abId) {
+  S.abon = { id: abId, loading: true };
+  S.abonEl = pushSheet('<div class="empty">Загрузка…</div>');
+  try { const d = await call('abon', { abId: abId }); if (S.abon && S.abon.id === abId) { S.abon = d.abon; renderAbon(); } }
+  catch (e) { toast(e.message, true); popSheet(); }
+}
+const ST_TXT = { done: '✓ был(а)', doneOther: '✓ был(а)', missed: 'пропуск', skip: 'отменил(а)', booked: 'записан(а)', plan: 'впереди', cancelled: 'отменено', pause: 'пауза' };
+function renderAbon() {
+  const a = S.abon, el = S.abonEl;
+  if (!a || !el || a.loading) return;
+  const multi = (S.cfg.days || []).length > 1;
+  let html = head(h(a.name), `Абонемент на ${planWord(a.total)} · ${h(daysLabel(a.days))} · ${money(a.price)} ₽`);
+  html += `<div class="stats"><div class="stat hl"><div class="v">${a.left}<small> / ${a.total}</small></div><div class="l">осталось</div></div>` +
+    `<div class="stat"><div class="v">${a.ahead}</div><div class="l">дат впереди</div></div>` +
+    `<div class="stat"><div class="v" style="color:${a.spare < 0 ? 'var(--warm)' : a.spare === 0 ? 'var(--tx)' : 'var(--acc)'}">${a.left > 0 ? Math.max(a.spare, 0) : '–'}</div><div class="l">${a.spare < 0 && a.left > 0 ? 'не хватает ' + (-a.spare) : 'можно пропустить'}</div></div></div>`;
+  if (a.left > 0 && a.spare < 0) html += `<div class="banner warm mt">⚠️ До ${h(a.until)} осталось ${a.ahead} ${plural(a.ahead, ['дата', 'даты', 'дат'])}, а занятий – ${a.left}. Продлите срок или добавьте день.</div>`;
+  html += `<div class="box"><div class="bt">Период</div>${kv('Начало', a.start)}${kv('Действует до', a.until)}${kv('Запас пропусков при покупке', String(a.spareTotal))}${a.freeze ? kv('Заморозка', a.freeze + ' нед.') : ''}${kv('Пропущено', String(a.missed || 0))}</div>`;
+  html += `<div class="box"><div class="bt">Даты</div><div class="dgrid">` + (a.plan || []).map(x =>
+    `<div class="dc ${x.st}${x.extra ? ' extra' : ''}"><b>${short(x.key)}</b>${h(dayName(wdOf(x.key)))} · ${ST_TXT[x.st] || ''}${x.extra ? ' (доп.)' : ''}</div>`).join('') + `</div>` +
+    `<div class="legend"><span>✓ – списано с абонемента</span><span>пропуск – не пришёл(а)</span><span>впереди – можно прийти</span></div></div>`;
+  if (multi) html += `<div class="box"><div class="bt">Дни абонемента</div><div class="muted" style="margin-bottom:8px">На эти дни держится место и строится план. Прийти можно и в другой день – занятие тоже спишется.</div>${daysPicker(a.days, true)}</div>`;
+  html += `<div class="box"><div class="bt">Срок</div><div class="g2"><button class="btn sm" onclick="abonShift(7)">＋ 1 неделя</button><button class="btn sm" onclick="abonShift(-7)">− 1 неделя</button></div>` +
+    `<label class="f">Или точная дата окончания</label><div class="g2" style="grid-template-columns:1fr auto"><input type="date" id="au" value="${isoOf(a.until)}"><button class="btn sm" onclick="abonUntil()">Сохранить</button></div></div>`;
+  html += `<div class="box"><div class="bt">Занятия</div><div class="g2"><button class="btn sm" ${a.left <= 0 ? 'disabled' : ''} onclick="abonUse(1)">Списать занятие</button><button class="btn sm" ${a.used <= 0 ? 'disabled' : ''} onclick="abonUse(-1)">Вернуть занятие</button></div>` +
+    `<div class="muted mt">Обычно ничего списывать не нужно: занятие списывается само при отметке «Была».</div></div>`;
+  html += `<div class="acts"><button class="btn" onclick="openCard('${a.client}')">Карточка клиента</button></div>`;
+  el.innerHTML = html;
+  el.querySelectorAll('.dsel [data-d]').forEach(b => b.onclick = () => abonEdit({ days: parseD(b.dataset.d) }, 'Дни абонемента сохранены'));
+}
+function isoOf(k) { const p = String(k || '').split('.'); return p.length === 3 ? p[2] + '-' + p[1] + '-' + p[0] : ''; }
+function abonEdit(data, msg) { return act('abonEdit', Object.assign({ abId: S.abon.id, withClient: !!S.card, id: S.card ? S.card.id : '' }, data), msg); }
+async function abonShift(days) {
+  const p = String(S.abon.until).split('.');
+  const d = new Date(Date.UTC(+p[2], +p[1] - 1, +p[0] + days));
+  const iso = d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
+  if (!(await confirmAsk(`${days > 0 ? 'Продлить' : 'Сократить'} абонемент до ${iso.split('-').reverse().join('.')}?`))) return;
+  abonEdit({ until: iso }, 'Срок изменён');
+}
+async function abonUntil() {
+  const v = S.abonEl.querySelector('#au').value;
+  if (!v) return toast('Выберите дату', true);
+  abonEdit({ until: v }, 'Срок изменён');
+}
+async function abonUse(n) {
+  if (!(await confirmAsk(n > 0 ? 'Списать одно занятие с абонемента вручную?' : 'Вернуть одно занятие на абонемент?'))) return;
+  abonEdit({ use: n }, n > 0 ? 'Списано' : 'Возвращено');
 }
 function unpause() { act('unpause', { id: S.card.id, withClient: true }, 'Пауза снята'); }
 function toggleRem(on) { act('reminders', { id: S.card.id, value: on, withClient: true }, on ? 'Напоминания включены' : 'Напоминания выключены'); }
