@@ -524,7 +524,7 @@ function renderClients() {
       const a = c.abon;
       const ab = a ? (a.status === 'Активен' ? `<span class="chip acc">абонемент ${a.total} · ост. ${a.left} · до ${short(a.until)}</span>` : a.status === 'Истёк' ? `<span class="chip warm">абонемент истёк</span>` : '<span class="chip">абонемент закончился</span>') : '';
       const dch = (S.cfg.days || []).length > 1 ? `<span class="chip">${c.ownDays ? h(daysLabel(c.days)) : 'дни не выбраны'}</span>` : '';
-      return `<div class="row" onclick="openCard('${c.id}')"><div class="who"><div class="nm">${h(c.name)}</div><div class="meta"><span class="chip">${h(c.phone)}</span>${dch}${ab}${tgChip(c)}${c.pausedTo ? `<span class="chip">пауза до ${short(c.pausedTo)}</span>` : ''}${c.reminders ? '' : '<span class="chip">напоминания выкл.</span>'}${c.debts ? `<span class="chip warm">долг ×${c.debts}</span>` : ''}</div></div><span style="color:var(--tx3)">›</span></div>`;
+      return `<div class="row" onclick="openCard('${c.id}')"><div class="who"><div class="nm">${h(c.name)}</div><div class="meta"><span class="chip">${h(c.phone)}</span>${dch}${ab}${tgChip(c)}${c.pausedTo ? `<span class="chip">пауза до ${short(c.pausedTo)}</span>` : ''}${c.reminders ? '' : '<span class="chip">напоминания выкл.</span>'}${c.debts ? `<span class="chip warm">долг ×${c.debts}</span>` : ''}${c.pers === 'интерес' ? '<span class="chip acc">💪 персональные</span>' : ''}</div></div><span style="color:var(--tx3)">›</span></div>`;
     }).join('')}</div>` : '<div class="empty">Никого не нашлось</div>') + '</div>';
   const inp = $('#cq');
   inp.oninput = () => { S.q = inp.value; const pos = inp.selectionStart; renderClients(); const n = $('#cq'); n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} };
@@ -586,6 +586,7 @@ function renderCard() {
 
   // данные
   html += `<div class="box"><div class="bt">Данные</div>` +
+    kv('Персональные', c.pers === 'интерес' ? '💪 интересуется' : c.pers === 'нет' ? 'не интересно' : c.persOffered ? 'предложено ' + c.persOffered : '') + kv('Посещений', String(c.visits || 0)) +
     kv('Связь', c.via) + kv('Ссылка', c.link) + kv('Откуда узнали', c.from) + kv('Метка', c.mark) + kv('Источник', c.source) + kv('В базе с', c.created) + kv('Комментарий', c.comment) +
     `<button class="btn sm mt" style="width:100%" onclick="openForm(S.card)">✎ Изменить данные</button></div>`;
 
