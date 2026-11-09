@@ -374,6 +374,7 @@ footer b{color:var(--tx2)}
 
         <label class="check"><input type="checkbox" id="health"> <span>Я прочитал(а) <a href="#zdorovie">противопоказания</a>. Если что-то из списка про меня – посоветуюсь с врачом и предупрежу Дарью <i style="color:var(--acc);font-style:normal">*</i></span></label>
 
+        <label class="check"><input type="checkbox" id="photoOk"> <span>Можно фотографировать меня на занятии для соцсетей Lite Fit</span></label>
         <label class="check"><input type="checkbox" id="consent"> <span>Согласен(на) на <a id="consentLink" href="#" target="_blank" rel="noopener">обработку персональных данных</a> для записи на занятия <i style="color:var(--acc);font-style:normal">*</i></span></label>
 
         <div class="err" id="err"></div>
@@ -446,7 +447,7 @@ $('#f').addEventListener('submit', async ev => {
   try {
     const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({
       action: 'anketa', firstName: fname, lastName: lname, phone: phone, noTelegram: noTg, via: via, link: link,
-      from: fromEl ? fromEl.value : '', days: daysEl.value, src: SRC, consent: true, healthAck: true, website: document.querySelector('[name=website]').value,
+      from: fromEl ? fromEl.value : '', days: daysEl.value, src: SRC, consent: true, healthAck: true, photoOk: !!($('#photoOk') && $('#photoOk').checked), website: document.querySelector('[name=website]').value,
     }) });
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || 'Не получилось отправить');
