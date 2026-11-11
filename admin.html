@@ -586,7 +586,7 @@ function renderCard() {
 
   // данные
   html += `<div class="box"><div class="bt">Данные</div>` +
-    kv('Персональные', c.pers === 'интерес' ? '💪 интересуется' : c.pers === 'нет' ? 'не интересно' : c.persOffered ? 'предложено ' + c.persOffered : '') + kv('Посещений', String(c.visits || 0)) + kv('Фото', c.photoOk ? '📷 согласна с ' + c.photoOk : '') + kv('Отзыв', c.review ? '«' + c.review + '»' + (c.reviewPub === 'да' ? ' · можно публиковать' : c.reviewPub === 'нет' ? ' · только для Дарьи' : '') : '') +
+    kv('Персональные', c.pers === 'интерес' ? '💪 интересуется' + (c.persReq ? ': ' + c.persReq : '') : c.pers === 'нет' ? 'не интересно' : c.persOffered ? 'предложено ' + c.persOffered : '') + kv('Посещений', String(c.visits || 0)) + kv('Фото', c.photoOk ? '📷 согласна с ' + c.photoOk : '') + kv('Гибкость', c.flex || '') + kv('Новый вид', c.wg ? 'виджеты работают с ' + c.wg : '') + kv('Отзыв', c.review ? '«' + c.review + '»' + (c.reviewPub === 'да' ? ' · можно публиковать' : c.reviewPub === 'нет' ? ' · только для Дарьи' : '') : '') +
     kv('Связь', c.via) + kv('Ссылка', c.link) + kv('Откуда узнали', c.from) + kv('Метка', c.mark) + kv('Источник', c.source) + kv('В базе с', c.created) + kv('Комментарий', c.comment) +
     `<button class="btn sm mt" style="width:100%" onclick="openForm(S.card)">✎ Изменить данные</button></div>`;
 
