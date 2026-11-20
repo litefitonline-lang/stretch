@@ -170,7 +170,32 @@ footer b{color:var(--tx2)}
   h1{font-size:88px}
   .gal img{height:540px}
 }
+
+.hero .ph{aspect-ratio:1/.78}
+.nextl{text-align:center;font-size:14px;color:var(--tx2);margin-top:10px;font-weight:600}
+.nextl b{color:var(--acc)}
+.formtop{padding-top:8px}
+.formtop section{padding-top:28px}
+.hbox{margin-top:10px;font-size:14px}
+.hbox ul{margin:6px 0 10px 18px;padding:0}
+.sbar{position:fixed;left:12px;right:12px;bottom:12px;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;border-radius:15px;background:var(--acc);color:var(--onAcc);font:800 16px/1 Manrope,sans-serif;box-shadow:0 12px 36px -10px rgba(0,0,0,.6);transform:translateY(140%);transition:transform .25s}
+.sbar.on{transform:none}
+footer{padding-bottom:84px}
+@media (min-width:960px){.sbar{display:none}.formtop{max-width:720px}.hero .ph{aspect-ratio:4/4.4}}
 </style>
+<!-- пиксель VK Рекламы (Top.Mail.Ru) 3813680: просмотр страницы + цели rastyazhka_forma_vidna, rastyazhka_nachali, rastyazhka_zapis -->
+<script type="text/javascript">
+var _tmr = window._tmr || (window._tmr = []);
+_tmr.push({id: "3813680", type: "pageView", start: (new Date()).getTime()});
+(function (d, w, id) {
+  if (d.getElementById(id)) return;
+  var ts = d.createElement("script"); ts.type = "text/javascript"; ts.async = true; ts.id = id;
+  ts.src = "https://top-fwz1.mail.ru/js/code.js";
+  var f = function () {var s = d.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ts, s);};
+  if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); }
+})(document, window, "tmr-code");
+</script>
+<noscript><div><img src="https://top-fwz1.mail.ru/counter?id=3813680;js=na" style="position:absolute;left:-9999px;" alt="Top.Mail.Ru" /></div></noscript>
 </head>
 <body>
 
@@ -192,14 +217,79 @@ footer b{color:var(--tx2)}
       <div class="fact"><b>750 ₽</b><span>разовое занятие</span></div>
     </div>
     <a class="btn pri" href="#zapis">Записаться на занятие</a>
+    <div class="nextl" id="nextHero"></div>
   </div>
 </div></div>
+
+<div class="wrap formtop">
+  <section id="zapis">
+    <div class="eyebrow">Запись за минуту</div>
+    <h2>Записаться на растяжку</h2>
+    <p class="muted" id="nextLine">Вторник и четверг, 20:00 · КДЦ «Заря». Первое занятие – 750 ₽, оплата на месте.</p>
+
+    <div class="card" id="formCard">
+      <form id="f" novalidate>
+        <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <label class="f" for="fname">Имя <i>*</i></label>
+        <input type="text" id="fname" name="fname" autocomplete="given-name" placeholder="Например: Анна" required>
+        
+
+        <label class="f" for="phone">Телефон <i>*</i></label>
+        <input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="+7 900 000-00-00" required>
+        <div class="hint">По этому номеру бот узнает Вас в Telegram</div>
+
+        <label class="check"><input type="checkbox" id="noTg"> У меня нет Telegram</label>
+        <div id="noTgBox" style="display:none">
+          <label class="f" for="via">Как с Вами связаться? <i>*</i></label>
+          <select id="via">
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="ВК">ВКонтакте</option>
+            <option value="MAX">MAX</option>
+            <option value="Звонок">Звонок по телефону</option>
+          </select>
+          <div id="linkBox" style="display:none">
+            <label class="f" for="link">Ссылка на профиль <i>*</i></label>
+            <input type="text" id="link" placeholder="vk.ru/…" autocomplete="off">
+          </div>
+          <div class="hint">Дарья напишет туда и будет напоминать о занятиях лично</div>
+        </div>
+
+        <label class="f">Когда Вам удобнее? <i>*</i></label>
+        <div class="chips" id="days">
+          <label><input type="radio" name="days" value="вт"><span>Вторник</span></label>
+          <label><input type="radio" name="days" value="чт"><span>Четверг</span></label>
+          <label><input type="radio" name="days" value="вт, чт"><span>Оба дня</span></label>
+        </div>
+        <div class="hint">Бот будет напоминать только про выбранные дни. Записаться можно на любой</div>
+
+        <div id="fromBox"><label class="f">Откуда Вы о нас узнали?</label>
+        <div class="chips" id="from">
+          <label><input type="radio" name="from" value="Листовка"><span>Листовка</span></label>
+          <label><input type="radio" name="from" value="Рекомендация"><span>От друзей</span></label>
+          <label><input type="radio" name="from" value="Соцсети"><span>Соцсети</span></label>
+          <label><input type="radio" name="from" value="Клиент Lite Fit"><span>Я уже с Lite Fit</span></label>
+          <label><input type="radio" name="from" value="Другое"><span>Другое</span></label>
+        </div></div>
+
+        <label class="check"><input type="checkbox" id="health"> <span>Я прочитал(а) <a href="#zdorovie" id="hLink">противопоказания</a>. Если что-то из списка про меня – посоветуюсь с врачом и предупрежу Дарью <i style="color:var(--acc);font-style:normal">*</i></span></label>
+        <div id="hBox" class="card health hbox" hidden></div>
+
+        <label class="check"><input type="checkbox" id="photoOk"> <span>Можно фотографировать меня на занятии для соцсетей Lite Fit</span></label>
+        <label class="check"><input type="checkbox" id="consent"> <span>Согласен(на) на <a id="consentLink" href="#" target="_blank" rel="noopener">обработку персональных данных</a> для записи на занятия <i style="color:var(--acc);font-style:normal">*</i></span></label>
+
+        <div class="err" id="err"></div>
+        <div style="margin-top:16px"><button class="btn pri" type="submit" id="go">Записаться на растяжку</button></div>
+        <div class="hint" style="text-align:center;margin-top:10px">Заранее ничего платить не нужно</div>
+      </form>
+    </div>
+  </section>
+</div>
 
 <main class="wrap">
 
   <div class="pair">
   <section>
-    <div class="eyebrow">Узнаёте себя?</div>
+    <div class="eyebrow">Знакомо?</div>
     <h2>Тело вроде не болит, но и свободно уже не двигается</h2>
     <p>День прошёл за столом или за рулём. К вечеру тянет поясницу, плечи сами поднялись к ушам, а наклониться за упавшими ключами – уже маленькое событие. Ничего страшного, просто тело месяцами живёт в одной позе и привыкает к ней.</p>
     <p class="muted">Растяжка – не про шпагат для фото. Она про спину, которая отпускает, шею, которая перестаёт каменеть, и ощущение после занятия, когда хочется распрямиться, а не лечь.</p>
@@ -319,70 +409,7 @@ footer b{color:var(--tx2)}
     <div class="gal-hint">листайте →</div>
   </section>
 
-  <div class="pair pair-form">
-  <section id="zapis">
-    <div class="eyebrow">Запись</div>
-    <h2>Записаться на растяжку</h2>
-    <p class="muted">Займёт минуту. Дальше подключите бота: он напомнит о занятии и запишет одной кнопкой.</p>
-
-    <div class="card" id="formCard">
-      <form id="f" novalidate>
-        <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <label class="f" for="fname">Имя <i>*</i></label>
-        <input type="text" id="fname" name="fname" autocomplete="given-name" placeholder="Например: Анна" required>
-        <div class="hint">Так бот и Дарья будут к Вам обращаться</div>
-
-        <label class="f" for="lname">Фамилия</label>
-        <input type="text" id="lname" name="lname" autocomplete="family-name" placeholder="Например: Смирнова">
-
-        <label class="f" for="phone">Телефон <i>*</i></label>
-        <input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="+7 900 000-00-00" required>
-        <div class="hint">По этому номеру бот узнает Вас в Telegram</div>
-
-        <label class="check"><input type="checkbox" id="noTg"> У меня нет Telegram</label>
-        <div id="noTgBox" style="display:none">
-          <label class="f" for="via">Как с Вами связаться? <i>*</i></label>
-          <select id="via">
-            <option value="WhatsApp">WhatsApp</option>
-            <option value="ВК">ВКонтакте</option>
-            <option value="MAX">MAX</option>
-            <option value="Звонок">Звонок по телефону</option>
-          </select>
-          <div id="linkBox" style="display:none">
-            <label class="f" for="link">Ссылка на профиль <i>*</i></label>
-            <input type="text" id="link" placeholder="vk.ru/…" autocomplete="off">
-          </div>
-          <div class="hint">Дарья напишет туда и будет напоминать о занятиях лично</div>
-        </div>
-
-        <label class="f">Когда Вам удобнее? <i>*</i></label>
-        <div class="chips" id="days">
-          <label><input type="radio" name="days" value="вт"><span>Вторник</span></label>
-          <label><input type="radio" name="days" value="чт"><span>Четверг</span></label>
-          <label><input type="radio" name="days" value="вт, чт"><span>Оба дня</span></label>
-        </div>
-        <div class="hint">Бот будет напоминать только про выбранные дни. Записаться можно на любой</div>
-
-        <label class="f">Откуда Вы о нас узнали?</label>
-        <div class="chips" id="from">
-          <label><input type="radio" name="from" value="Листовка"><span>Листовка</span></label>
-          <label><input type="radio" name="from" value="Рекомендация"><span>От друзей</span></label>
-          <label><input type="radio" name="from" value="Соцсети"><span>Соцсети</span></label>
-          <label><input type="radio" name="from" value="Клиент Lite Fit"><span>Я уже с Lite Fit</span></label>
-          <label><input type="radio" name="from" value="Другое"><span>Другое</span></label>
-        </div>
-
-        <label class="check"><input type="checkbox" id="health"> <span>Я прочитал(а) <a href="#zdorovie">противопоказания</a>. Если что-то из списка про меня – посоветуюсь с врачом и предупрежу Дарью <i style="color:var(--acc);font-style:normal">*</i></span></label>
-
-        <label class="check"><input type="checkbox" id="photoOk"> <span>Можно фотографировать меня на занятии для соцсетей Lite Fit</span></label>
-        <label class="check"><input type="checkbox" id="consent"> <span>Согласен(на) на <a id="consentLink" href="#" target="_blank" rel="noopener">обработку персональных данных</a> для записи на занятия <i style="color:var(--acc);font-style:normal">*</i></span></label>
-
-        <div class="err" id="err"></div>
-        <div style="margin-top:16px"><button class="btn pri" type="submit" id="go">Записаться</button></div>
-      </form>
-    </div>
-  </section>
-
+  <div>
   <section>
     <div class="eyebrow">Остались вопросы?</div>
     <div class="links">
@@ -394,6 +421,8 @@ footer b{color:var(--tx2)}
   </section>
   </div>
 </main>
+
+<a class="sbar" id="sbar" href="#zapis">Записаться · Вт и Чт в 20:00</a>
 
 <div class="lb" id="lb" hidden><button class="lbx" type="button" aria-label="Закрыть">✕</button><button class="garr prev" type="button" aria-label="Назад">‹</button><img alt=""><button class="garr next" type="button" aria-label="Дальше">›</button><div class="lbn"></div></div>
 
@@ -426,8 +455,8 @@ function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<':
 $('#f').addEventListener('submit', async ev => {
   ev.preventDefault();
   $('#err').classList.remove('on');
-  const fname = $('#fname').value.trim().replace(/\s+/g, ' ');
-  const lname = $('#lname').value.trim().replace(/\s+/g, ' ');
+  let fname = $('#fname').value.trim().replace(/\s+/g, ' ');
+  let lname = '';
   const phone = $('#phone').value.trim();
   const digits = phone.replace(/\D/g, '');
   const noTg = $('#noTg').checked;
@@ -436,7 +465,7 @@ $('#f').addEventListener('submit', async ev => {
   const fromEl = document.querySelector('input[name=from]:checked');
   const daysEl = document.querySelector('input[name=days]:checked');
   if (fname.length < 2) return showErr('Укажите, пожалуйста, имя');
-  if (fname.indexOf(' ') > 0) return showErr('В поле «Имя» – только имя, фамилию – в поле ниже');
+  if (fname.indexOf(' ') > 0) { lname = fname.slice(fname.indexOf(' ') + 1); fname = fname.slice(0, fname.indexOf(' ')); }
   if (digits.length < 10) return showErr('Проверьте номер телефона');
   if (noTg && (via === 'ВК' || via === 'MAX') && !link) return showErr('Добавьте ссылку на профиль, чтобы Дарья могла написать');
   if (!daysEl) return showErr('Выберите, когда Вам удобнее заниматься');
@@ -453,12 +482,13 @@ $('#f').addEventListener('submit', async ev => {
     if (!j.ok) throw new Error(j.error || 'Не получилось отправить');
     done(j, noTg, via);
   } catch (e) {
-    btn.disabled = false; btn.textContent = 'Записаться';
+    btn.disabled = false; btn.textContent = 'Записаться на растяжку';
     showErr((e && e.message && !/fetch|network|JSON/i.test(e.message) ? e.message : 'Не получилось отправить') + '. Попробуйте ещё раз или напишите Дарье в Telegram.');
   }
 });
 
 function done(j, noTg, via) {
+  pxGoal('rastyazhka_zapis');
   let html;
   if (noTg) {
     const where = { 'WhatsApp': 'в WhatsApp', 'ВК': 'ВКонтакте', 'MAX': 'в MAX', 'Звонок': 'или позвонит' }[via] || '';
@@ -472,6 +502,50 @@ function done(j, noTg, via) {
   $('#formCard').innerHTML = html;
   $('#zapis').scrollIntoView({ behavior: 'smooth' });
 }
+
+
+
+// цели пикселя VK: форма на экране, начали заполнять, запись отправлена
+const PX_ID = 3813680, pxDone = {};
+function pxGoal(g) { if (pxDone[g]) return; pxDone[g] = 1; try { (window._tmr || (window._tmr = [])).push({ id: PX_ID, type: 'reachGoal', goal: g }); } catch (e) {} }
+(function () {
+  const form = $('#zapis');
+  if (form && 'IntersectionObserver' in window) new IntersectionObserver((es, o) => { if (es.some(e => e.isIntersecting)) { pxGoal('rastyazhka_forma_vidna'); o.disconnect(); } }, { threshold: 0.25 }).observe(form);
+  $('#f').addEventListener('focusin', () => pxGoal('rastyazhka_nachali'));
+  $('#f').addEventListener('change', () => pxGoal('rastyazhka_nachali'));
+})();
+// для пришедших по рекламе и ссылкам с меткой – вопрос «откуда узнали» не нужен
+if (SRC) { const fb = $('#fromBox'); if (fb) fb.style.display = 'none'; }
+// противопоказания – раскрываются прямо в форме, без ухода вниз
+(function () {
+  const l = $('#hLink'), box = $('#hBox'), src = document.querySelector('#zdorovie .health');
+  if (!l || !box || !src) return;
+  l.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (!box.innerHTML) box.innerHTML = src.innerHTML; box.hidden = !box.hidden; });
+})();
+// ближайшее занятие (вт и чт, 20:00 по Москве)
+(function () {
+  const now = new Date(), msk = new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000);
+  const DN = ['воскресенье','понедельник','вторник','среду','четверг','пятницу','субботу'];
+  const MN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  for (let i = 0; i < 8; i++) {
+    const d = new Date(msk); d.setDate(msk.getDate() + i);
+    const wd = d.getDay();
+    if (wd !== 2 && wd !== 4) continue;
+    if (i === 0 && msk.getHours() >= 19) continue;
+    const when = i === 0 ? 'сегодня' : (i === 1 ? 'завтра' : (wd === 2 ? 'во ' : 'в ') + DN[wd]);
+    const t = 'Ближайшее занятие – <b>' + when + ', ' + d.getDate() + ' ' + MN[d.getMonth()] + ', в 20:00</b>';
+    const h = $('#nextHero'); if (h) h.innerHTML = t;
+    break;
+  }
+})();
+// нижняя кнопка на телефоне: видна, пока на экране нет ни первого экрана, ни формы
+(function () {
+  const bar = $('#sbar'), hero = document.querySelector('.hero'), form = $('#zapis');
+  if (!bar || !hero || !form || !('IntersectionObserver' in window)) return;
+  const vis = new Map();
+  const io = new IntersectionObserver(es => { es.forEach(e => vis.set(e.target, e.isIntersecting)); bar.classList.toggle('on', !vis.get(hero) && !vis.get(form)); });
+  io.observe(hero); io.observe(form);
+})();
 
 /* ===== Галерея: стрелки, перетаскивание мышью, просмотр на весь экран ===== */
 (function () {
